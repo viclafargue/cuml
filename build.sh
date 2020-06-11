@@ -16,7 +16,7 @@ ARGS=$*
 
 # NOTE: ensure all dir changes are relative to the location of this
 # script, and that this script resides in the repo dir!
-REPODIR=$(cd $(dirname $0); pwd)
+export REPODIR=$(cd $(dirname $0); pwd)
 
 VALIDARGS="clean libcuml cuml prims bench prims-bench cppdocs pydocs -v -g -n --allgpuarch --singlegpu --nvtx --show_depr_warn -h --help"
 HELP="$0 [<target> ...] [<flag> ...]

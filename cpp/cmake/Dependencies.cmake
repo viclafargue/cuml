@@ -209,6 +209,18 @@ add_dependencies(benchmarklib benchmark)
 set_property(TARGET benchmarklib PROPERTY
   IMPORTED_LOCATION ${GBENCH_DIR}/lib/libbenchmark.a)
 
+##############################################################################
+# - sklearn-preprocess  ------------------------------------------------------
+
+set(SKL_PREPROCESS_DIR ${CMAKE_CURRENT_BINARY_DIR}/sklearn-preprocess CACHE STRING "Path to sklearn-preprocess repo")
+ExternalProject_Add(sklearn-preprocess
+  GIT_REPOSITORY    https://gitlab-master.nvidia.com/RAPIDS/gpu-accelerated-sklearn-preprocessing.git
+  GIT_TAG           673c31a8801effabc207a6247c18a3c28dd502f4
+  PREFIX            ${SKL_PREPROCESS_DIR}
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   cp -R ${SKL_PREPROCESS_DIR}/src/sklearn-preprocess/sklearn/preprocessing $ENV{REPODIR}/python/cuml)
+
 # dependencies will be added in sequence, so if a new project `project_b` is added
 # after `project_a`, please add the dependency add_dependencies(project_b project_a)
 # This allows the cloning to happen sequentially, enhancing the printing at
@@ -224,3 +236,4 @@ add_dependencies(benchmark googletest)
 add_dependencies(faiss benchmark)
 add_dependencies(faisslib faiss)
 add_dependencies(treelite faiss)
+add_dependencies(sklearn-preprocess treelite)

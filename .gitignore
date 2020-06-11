@@ -1,6 +1,9 @@
 ## python raft symlink
 python/cuml/raft
 
+## GPU accelerated sklearn preprocessing
+python/cuml/preprocessing
+
 ## common
 __pycache__
 *.pyc
