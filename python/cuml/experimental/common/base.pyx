@@ -17,6 +17,7 @@
 # distutils: language = c++
 
 import typing
+import functools
 
 import numpy as np
 import cupy as cp
@@ -26,15 +27,76 @@ from cuml.common.input_utils import input_to_cuml_array
 from cuml.common.input_utils import input_to_host_array
 from cuml.common.array import CumlArray
 from cuml.common.device_selection import DeviceType
+from cuml.internals.api_decorators import device_interop_preparation
+from cuml.internals import api_base_return_any, api_base_return_array, \
+    api_base_return_generic, api_base_fit_transform, \
+    api_base_return_any_skipall
 from cuml.common.base import Base as originalBase
+
+
+def dispatcher(func_name, gpu_func):
+    @functools.wraps(gpu_func)
+    def dispatch(self, *args, **kwargs):
+        return self.dispatch_func(func_name, gpu_func, *args, **kwargs)
+    return dispatch
+
+
+def resolve_mro(cls, attr_name):
+    for klass in cls.__mro__:
+        if attr_name in vars(klass):
+            attr = getattr(klass, attr_name)
+            if not getattr(attr, '_cuml_dispatch_wrapped', False):
+                return klass, attr
+            else:
+                return None
+    return None
+
+
+return_decorators = {
+    'fit': api_base_return_any(),
+    'predict': api_base_return_array(),
+    'transform': api_base_return_array(),
+    'kneighbors': api_base_return_generic(),
+    'fit_transform': api_base_fit_transform(),
+    'fit_predict': api_base_return_array(),
+    'inverse_transform': api_base_return_array(),
+    'score': api_base_return_any_skipall,
+    'decision_function': api_base_return_array(),
+    'predict_proba': api_base_return_array(),
+    'predict_log_proba': api_base_return_array()
+}
 
 
 class Base(originalBase):
     """
     Experimental base class to implement CPU/GPU interoperability.
     """
+    initialized = False
 
-    def dispatch_func(self, func_name, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):
+        if not cls.initialized:
+            # add decorator to constructor to for interop feature
+            cls.__init__ = device_interop_preparation(cls.__init__)
+
+            estimator_methods = return_decorators.keys()
+            for func_name in estimator_methods:
+                # get cuML GPU function
+                resolution = resolve_mro(cls, func_name)
+                # if a function was found
+                if resolution:
+                    klass, gpu_func = resolution
+                    new_func = return_decorators[func_name](dispatcher(func_name, gpu_func))
+                    new_func._cuml_dispatch_wrapped = True
+                    setattr(klass, func_name, new_func)
+
+            # remember that class has been initialized
+            cls.initialized = True
+
+        # return an instance of the class
+        return super().__new__(cls)
+
+
+    def dispatch_func(self, func_name, gpu_func, *args, **kwargs):
         """
         This function will dispatch calls to training and inference according
         to the global configuration. It should work for all estimators
@@ -45,6 +107,8 @@ class Base(originalBase):
         ----------
         func_name : string
             name of the function to be dispatched
+        gpu_func : function
+            original cuML function
         args : arguments
             arguments to be passed to the function for the call
         kwargs : keyword arguments
@@ -54,14 +118,7 @@ class Base(originalBase):
         device_type = cuml.global_settings.device_type
         if device_type == DeviceType.device:
             # call the original cuml method
-            cuml_func_name = '_' + func_name
-            if hasattr(self, cuml_func_name):
-                cuml_func = getattr(self, cuml_func_name)
-                return cuml_func(*args, **kwargs)
-            else:
-                raise ValueError('Function "{}" could not be found in'
-                                 ' the cuML estimator'.format(cuml_func_name))
-
+            return gpu_func(self, *args, **kwargs)
         elif device_type == DeviceType.host:
             # check if the sklean model already set as attribute of the cuml
             # estimator its presence should signify that CPU execution was
@@ -165,37 +222,3 @@ class Base(originalBase):
                     return self
             # return method result
             return res
-
-    def fit(self, *args, **kwargs):
-        return self.dispatch_func('fit', *args, **kwargs)
-
-    def predict(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('predict', *args, **kwargs)
-
-    def transform(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('transform', *args, **kwargs)
-
-    def kneighbors(self, X, *args, **kwargs) \
-            -> typing.Union[CumlArray, typing.Tuple[CumlArray, CumlArray]]:
-        return self.dispatch_func('kneighbors', X, *args, **kwargs)
-
-    def fit_transform(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('fit_transform', *args, **kwargs)
-
-    def fit_predict(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('fit_predict', *args, **kwargs)
-
-    def inverse_transform(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('inverse_transform', *args, **kwargs)
-
-    def score(self, *args, **kwargs):
-        return self.dispatch_func('score', *args, **kwargs)
-
-    def decision_function(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('decision_function', *args, **kwargs)
-
-    def predict_proba(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('predict_proba', *args, **kwargs)
-
-    def predict_log_proba(self, *args, **kwargs) -> CumlArray:
-        return self.dispatch_func('predict_log_proba', *args, **kwargs)

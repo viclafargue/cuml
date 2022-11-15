@@ -58,7 +58,6 @@ if has_scipy(True):
     import scipy.sparse
 
 from cuml.common.array_descriptor import CumlArrayDescriptor
-from cuml.internals.api_decorators import device_interop_preparation
 
 import rmm
 
@@ -303,7 +302,6 @@ class UMAP(Base,
     _cpu_estimator_import_path = 'umap.UMAP'
     embedding_ = CumlArrayDescriptor(order='C')
 
-    @device_interop_preparation
     def __init__(self, *,
                  n_neighbors=15,
                  n_components=2,
@@ -483,8 +481,8 @@ class UMAP(Base,
     @generate_docstring(convert_dtype_cast='np.float32',
                         X='dense_sparse',
                         skip_parameters_heading=True)
-    def _fit(self, X, y=None, convert_dtype=True,
-             knn_graph=None) -> "UMAP":
+    def fit(self, X, y=None, convert_dtype=True,
+            knn_graph=None) -> "UMAP":
         """
         Fit X into an embedded space.
 
@@ -613,8 +611,7 @@ class UMAP(Base,
                                                        data in \
                                                        low-dimensional space.',
                                        'shape': '(n_samples, n_components)'})
-    @cuml.internals.api_base_fit_transform()
-    def _fit_transform(self, X, y=None, convert_dtype=True,
+    def fit_transform(self, X, y=None, convert_dtype=True,
                        knn_graph=None) -> CumlArray:
         """
         Fit X into an embedded space and return that transformed
@@ -660,7 +657,7 @@ class UMAP(Base,
                                                        data in \
                                                        low-dimensional space.',
                                        'shape': '(n_samples, n_components)'})
-    def _transform(self, X, convert_dtype=True, knn_graph=None) -> CumlArray:
+    def transform(self, X, convert_dtype=True, knn_graph=None) -> CumlArray:
         """
         Transform X into the existing embedded space and return that
         transformed output.

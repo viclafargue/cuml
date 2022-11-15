@@ -34,7 +34,6 @@ from pylibraft.common.handle cimport handle_t
 from cuml.decomposition.utils cimport *
 from cuml.common import input_to_cuml_array
 from cuml.common.array_descriptor import CumlArrayDescriptor
-from cuml.internals.api_decorators import device_interop_preparation
 
 from cython.operator cimport dereference as deref
 
@@ -240,7 +239,6 @@ class TruncatedSVD(Base,
     explained_variance_ratio_ = CumlArrayDescriptor(order='F')
     singular_values_ = CumlArrayDescriptor(order='F')
 
-    @device_interop_preparation
     def __init__(self, *, algorithm='full', handle=None, n_components=1,
                  n_iter=15, random_state=None, tol=1e-7,
                  verbose=False, output_type=None):
@@ -298,7 +296,7 @@ class TruncatedSVD(Base,
                                                 dtype=self.dtype)
 
     @generate_docstring()
-    def _fit(self, X, y=None) -> "TruncatedSVD":
+    def fit(self, X, y=None) -> "TruncatedSVD":
         """
         Fit LSI model on training cudf DataFrame X. y is currently ignored.
 
@@ -312,7 +310,7 @@ class TruncatedSVD(Base,
                                        'type': 'dense',
                                        'description': 'Reduced version of X',
                                        'shape': '(n_samples, n_components)'})
-    def _fit_transform(self, X, y=None) -> CumlArray:
+    def fit_transform(self, X, y=None) -> CumlArray:
         """
         Fit LSI model to X and perform dimensionality reduction on X.
         y is currently ignored.
@@ -376,7 +374,7 @@ class TruncatedSVD(Base,
                                        'type': 'dense',
                                        'description': 'X in original space',
                                        'shape': '(n_samples, n_features)'})
-    def _inverse_transform(self, X, convert_dtype=False) -> CumlArray:
+    def inverse_transform(self, X, convert_dtype=False) -> CumlArray:
         """
         Transform X back to its original space.
         Returns X_original whose transform would be X.
@@ -425,7 +423,7 @@ class TruncatedSVD(Base,
                                        'type': 'dense',
                                        'description': 'Reduced version of X',
                                        'shape': '(n_samples, n_components)'})
-    def _transform(self, X, convert_dtype=False) -> CumlArray:
+    def transform(self, X, convert_dtype=False) -> CumlArray:
         """
         Perform dimensionality reduction on X.
 

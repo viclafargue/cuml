@@ -26,7 +26,6 @@ from cuml.common.array import CumlArray
 from cuml.common.array_descriptor import CumlArrayDescriptor
 from cuml.common.logger import warn
 from cuml.linear_model.base import LinearPredictMixin
-from cuml.internals.api_decorators import device_interop_preparation
 
 
 class ElasticNet(Base,
@@ -148,7 +147,6 @@ class ElasticNet(Base,
     _cpu_estimator_import_path = 'sklearn.linear_model.ElasticNet'
     coef_ = CumlArrayDescriptor(order='F')
 
-    @device_interop_preparation
     def __init__(self, *, alpha=1.0, l1_ratio=0.5, fit_intercept=True,
                  normalize=False, max_iter=1000, tol=1e-3,
                  solver='cd', selection='cyclic',
@@ -236,8 +234,8 @@ class ElasticNet(Base,
             raise ValueError(msg.format(l1_ratio))
 
     @generate_docstring()
-    def _fit(self, X, y, convert_dtype=True,
-             sample_weight=None) -> "ElasticNet":
+    def fit(self, X, y, convert_dtype=True,
+            sample_weight=None) -> "ElasticNet":
         """
         Fit the model with X and y.
 

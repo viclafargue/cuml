@@ -34,7 +34,7 @@ from cuml.common.doc_utils import generate_docstring
 from cuml.linear_model.base import LinearPredictMixin
 from pylibraft.common.handle cimport handle_t
 from cuml.common import input_to_cuml_array
-from cuml.internals.api_decorators import device_interop_preparation
+
 
 cdef extern from "cuml/linear_model/glm.hpp" namespace "ML::GLM":
 
@@ -189,7 +189,6 @@ class Ridge(Base,
     coef_ = CumlArrayDescriptor(order='F')
     intercept_ = CumlArrayDescriptor(order='F')
 
-    @device_interop_preparation
     def __init__(self, *, alpha=1.0, solver='eig', fit_intercept=True,
                  normalize=False, handle=None, output_type=None,
                  verbose=False):
@@ -240,7 +239,7 @@ class Ridge(Base,
         }[algorithm]
 
     @generate_docstring()
-    def _fit(self, X, y, convert_dtype=True, sample_weight=None) -> "Ridge":
+    def fit(self, X, y, convert_dtype=True, sample_weight=None) -> "Ridge":
         """
         Fit the model with X and y.
 

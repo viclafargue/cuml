@@ -48,7 +48,6 @@ from cuml.common import using_output_type
 from cuml.prims.stats import cov
 from cuml.common.input_utils import sparse_scipy_to_cp
 from cuml.common.exceptions import NotFittedError
-from cuml.internals.api_decorators import device_interop_preparation
 
 
 cdef extern from "cuml/decomposition/pca.hpp" namespace "ML":
@@ -280,7 +279,6 @@ class PCA(Base,
     noise_variance_ = CumlArrayDescriptor(order='F')
     trans_input_ = CumlArrayDescriptor(order='F')
 
-    @device_interop_preparation
     def __init__(self, *, copy=True, handle=None, iterated_power=15,
                  n_components=None, random_state=None, svd_solver='auto',
                  tol=1e-7, verbose=False, whiten=False,
@@ -405,7 +403,7 @@ class PCA(Base,
         return self
 
     @generate_docstring(X='dense_sparse')
-    def _fit(self, X, y=None) -> "PCA":
+    def fit(self, X, y=None) -> "PCA":
         """
         Fit the model with X. y is currently ignored.
 
@@ -494,8 +492,7 @@ class PCA(Base,
                                        'type': 'dense_sparse',
                                        'description': 'Transformed values',
                                        'shape': '(n_samples, n_components)'})
-    @cuml.internals.api_base_return_array_skipall
-    def _fit_transform(self, X, y=None) -> CumlArray:
+    def fit_transform(self, X, y=None) -> CumlArray:
         """
         Fit the model with X and apply the dimensionality reduction on X.
 
@@ -540,8 +537,8 @@ class PCA(Base,
                                        'type': 'dense_sparse',
                                        'description': 'Transformed values',
                                        'shape': '(n_samples, n_features)'})
-    def _inverse_transform(self, X, convert_dtype=False,
-                           return_sparse=False, sparse_tol=1e-10) -> CumlArray:
+    def inverse_transform(self, X, convert_dtype=False,
+                          return_sparse=False, sparse_tol=1e-10) -> CumlArray:
         """
         Transform data back to its original space.
 
@@ -641,7 +638,7 @@ class PCA(Base,
                                        'type': 'dense_sparse',
                                        'description': 'Transformed values',
                                        'shape': '(n_samples, n_components)'})
-    def _transform(self, X, convert_dtype=False) -> CumlArray:
+    def transform(self, X, convert_dtype=False) -> CumlArray:
         """
         Apply dimensionality reduction to X.
 

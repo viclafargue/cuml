@@ -39,7 +39,6 @@ from cuml.common import input_to_cuml_array
 from cuml.common.sparse_utils import is_sparse
 from cuml.common.sparse_utils import is_dense
 from cuml.metrics.distance_type cimport DistanceType
-from cuml.internals.api_decorators import device_interop_preparation
 
 from cuml.neighbors.ann cimport *
 from pylibraft.common.handle cimport handle_t
@@ -309,7 +308,6 @@ class NearestNeighbors(Base,
     _cpu_estimator_import_path = 'sklearn.neighbors.NearestNeighbors'
     _fit_X = CumlArrayDescriptor(order='C')
 
-    @device_interop_preparation
     def __init__(self, *,
                  n_neighbors=5,
                  verbose=False,
@@ -339,7 +337,7 @@ class NearestNeighbors(Base,
         self.knn_index = None
 
     @generate_docstring(X='dense_sparse')
-    def _fit(self, X, convert_dtype=True) -> "NearestNeighbors":
+    def fit(self, X, convert_dtype=True) -> "NearestNeighbors":
         """
         Fit GPU index for performing nearest neighbor queries.
 
@@ -487,7 +485,7 @@ class NearestNeighbors(Base,
                            return_values=[('dense', '(n_samples, n_features)'),
                                           ('dense',
                                            '(n_samples, n_features)')])
-    def _kneighbors(
+    def kneighbors(
         self,
         X=None,
         n_neighbors=None,
