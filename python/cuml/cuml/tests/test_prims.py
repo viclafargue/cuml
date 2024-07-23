@@ -86,3 +86,13 @@ def test_monotonic_validate_invert_labels(arr_type, dtype, copy):
             assert array_equal(monotonic, arr_orig)
 
     assert array_equal(inverted, original)
+
+
+def test_check_labels():
+    n_labels, n_classes = 1_000_000, 8000
+    labels = cp.random.choice(n_classes, size=n_labels)
+    classes = cp.arange(n_classes)
+
+    assert check_labels(labels, classes) == True
+    labels[534_122] = 9123
+    assert check_labels(labels, classes) == False
