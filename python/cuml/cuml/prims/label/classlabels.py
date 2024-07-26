@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2023, NVIDIA CORPORATION.
+# Copyright (c) 2020-2024, NVIDIA CORPORATION.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -211,7 +211,8 @@ def check_labels(labels, classes) -> bool:
     device = cp.cuda.Device()
     device_properties = device.attributes
     shared_mem_per_block = device_properties['MaxSharedMemoryPerBlock']
-    pass_size = min(n_classes, math.floor(shared_mem_per_block / labels.dtype.itemsize))
+    pass_size = min(n_classes,
+                    math.floor(shared_mem_per_block / labels.dtype.itemsize))
     n_passes = math.ceil(n_classes / pass_size)
 
     threads_per_block = 512
