@@ -210,9 +210,10 @@ def check_labels(labels, classes) -> bool:
 
     device = cp.cuda.Device()
     device_properties = device.attributes
-    shared_mem_per_block = device_properties['MaxSharedMemoryPerBlock']
-    pass_size = min(n_classes,
-                    math.floor(shared_mem_per_block / labels.dtype.itemsize))
+    shared_mem_per_block = device_properties["MaxSharedMemoryPerBlock"]
+    pass_size = min(
+        n_classes, math.floor(shared_mem_per_block / labels.dtype.itemsize)
+    )
     n_passes = math.ceil(n_classes / pass_size)
 
     threads_per_block = 512
@@ -224,10 +225,7 @@ def check_labels(labels, classes) -> bool:
     validate(
         (n_blocks,),
         (threads_per_block,),
-        (labels, n_labels,
-         classes, n_classes,
-         n_passes, pass_size,
-         valid),
+        (labels, n_labels, classes, n_classes, n_passes, pass_size, valid),
         shared_mem=smem,
     )
 
