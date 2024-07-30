@@ -93,6 +93,11 @@ def test_check_labels():
     labels = cp.random.choice(n_classes, size=n_labels)
     classes = cp.arange(n_classes)
 
-    assert check_labels(labels, classes) == True
+    assert check_labels(labels, classes)
     labels[534_122] = 9123
-    assert check_labels(labels, classes) == False
+    assert not check_labels(labels, classes)
+    labels[534_122] = 0
+    labels[11_728] = 9123
+    assert not check_labels(labels, classes)
+    labels[11_728] = 0
+    assert check_labels(labels, classes)
