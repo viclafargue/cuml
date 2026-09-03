@@ -422,6 +422,35 @@ def test_fit_transform_weighted_kmeans(
     assert sk_transf.shape == cuml_transf.shape
 
 
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_kmeans_transform_returns_euclidean_distances(dtype):
+    X = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 1.0, 1.0],
+            [2.0, 2.0, 2.0],
+            [10.0, 10.0, 10.0],
+            [11.0, 11.0, 11.0],
+            [12.0, 12.0, 12.0],
+        ],
+        dtype=dtype,
+    )
+    init = np.array([[1.0, 1.0, 1.0], [11.0, 11.0, 11.0]], dtype=dtype)
+    X_new = np.array([[0.0, 0.0, 0.0], [10.0, 10.0, 10.0]], dtype=dtype)
+
+    cuml_model = cuml.KMeans(
+        n_clusters=2, init=init, n_init=1, output_type="numpy"
+    ).fit(X)
+    sklearn_model = cluster.KMeans(n_clusters=2, init=init, n_init=1).fit(X)
+
+    np.testing.assert_allclose(
+        cuml_model.transform(X_new),
+        sklearn_model.transform(X_new),
+        rtol=1e-5,
+        atol=1e-6,
+    )
+
+
 def test_kmeans_empty_x():
     """Check that a nice error happens if X is empty, rather than a segfault"""
     model = cuml.KMeans()
