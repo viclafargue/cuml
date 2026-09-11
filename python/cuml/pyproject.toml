@@ -44,6 +44,7 @@ filterwarnings = [
   "ignore:(.*)alias(.*):DeprecationWarning:hdbscan[.*]",
   # From sklearn
   "ignore:A column-vector y was passed:sklearn.exceptions.DataConversionWarning",
+  "ignore::sklearn.exceptions.SkipTestWarning",
   # sklearn 1.6 renamed force_all_finite to ensure_all_finite
   "ignore:'force_all_finite' was renamed to 'ensure_all_finite'.*:FutureWarning",
   # From dask-glm
@@ -85,7 +86,7 @@ authors = [
 license = "Apache-2.0"
 requires-python = ">=3.11"
 dependencies = [
-    "cuda-bindings>=13.0.1,<14.0",
+    "cuda-bindings>=13.0.2,<14.0",
     "cuda-toolkit[cublas,cufft,curand,cusolver,cusparse]==13.*",
     "cudf==26.12.*,>=0.0.0a0",
     "cupy-cuda13x[ctk]>=14.0.1,!=14.1.0",
@@ -121,7 +122,6 @@ test = [
     "lightgbm",
     "msgspec",
     "nltk",
-    "numpydoc<1.9",
     "nvidia-ml-py>=12",
     "onnxruntime",
     "pynndescent",
@@ -192,7 +192,7 @@ dependencies-file = "../../dependencies.yaml"
 matrix-entry = "cuda_suffixed=true;use_cuda_wheels=true"
 requires = [
     "cmake>=4.0",
-    "cuda-bindings>=13.0.1,<14.0",
+    "cuda-bindings>=13.0.2,<14.0",
     "cython>=3.2.2,!=3.2.7",
     "libcuml==26.12.*,>=0.0.0a0",
     "libnvforest==26.12.*,>=0.0.0a0",
