@@ -384,7 +384,7 @@ SmoothKnnResult smooth_knn_distances(const std::vector<Index>& indices,
                                                                               &params,
                                                                               n_neighbors,
                                                                               local_connectivity,
-                                                                              stream,
+                                                                              stream.get(),
                                                                               self_knn);
 
   SmoothKnnResult result{std::vector<float>(n), std::vector<float>(n)};
